@@ -18,13 +18,13 @@ options(dplyr.summarise.inform = FALSE)
 #  scoring_history <- ffscrapr::ff_scoringhistory(conn, seasons = 2012:2020)
 
 ## ----eval = FALSE-------------------------------------------------------------
-#  latest_rankings <- ffs_latest_rankings()
+#  latest_rankings <- ffs_latest_rankings(type = "draft") # also "week", for inseason sims
 
 ## ----eval = FALSE-------------------------------------------------------------
 #  rosters <- ffs_rosters(conn)
 
 ## ----eval = FALSE-------------------------------------------------------------
-#  lineup_constraints <- ffscrapr::ff_starter_positions(conn)
+#  lineup_constraints <- ffs_starter_positions(conn)
 
 ## ----eval = FALSE-------------------------------------------------------------
 #  league_info <- ffscrapr::ff_league(conn)
@@ -32,7 +32,8 @@ options(dplyr.summarise.inform = FALSE)
 ## ----eval = FALSE-------------------------------------------------------------
 #  adp_outcomes <- ffs_adp_outcomes(
 #      scoring_history = scoring_history,
-#      injury_model = "simple" # or "none"
+#      gp_model = "simple", # or "none"
+#      pos_filter = c("QB","RB","WR","TE","K")
 #    )
 
 ## ----eval = FALSE-------------------------------------------------------------
@@ -40,7 +41,7 @@ options(dplyr.summarise.inform = FALSE)
 #      adp_outcomes = adp_outcomes,
 #      latest_rankings = latest_rankings,
 #      n_seasons = 100, # number of seasons
-#      n_weeks = 14, # weeks per season
+#      weeks = 1:14, # specifies which weeks to generate projections for
 #      rosters = rosters # optional, reduces the sample to just rostered players
 #    )
 
@@ -57,15 +58,15 @@ options(dplyr.summarise.inform = FALSE)
 #      lineup_efficiency_mean = 0.775,
 #      lineup_efficiency_sd = 0.05,
 #      best_ball = FALSE, # or TRUE
-#      parallel = FALSE # or TRUE
+#      pos_filter = c("QB","RB","WR","TE","K")
 #    )
 
 ## ----eval = FALSE-------------------------------------------------------------
 #    schedules <- ffs_build_schedules(
-#      n_teams = length(unique(rosters$franchise_id)),
 #      n_seasons = n_seasons,
 #      n_weeks = n_weeks,
-#      seed = NULL
+#      seed = NULL,
+#      franchises = ff_franchises(conn)
 #    )
 
 ## ----eval = FALSE-------------------------------------------------------------
@@ -78,10 +79,8 @@ options(dplyr.summarise.inform = FALSE)
 #  library(ffsimulator)
 #  library(ffscrapr)
 #  library(tidyverse)
-#  library(furrr)
-#  library(tictoc)
+#  library(tictoc) # for timing!
 #  
-#  plan(multisession)
 #  set.seed(613)
 
 ## ----eval = FALSE-------------------------------------------------------------
@@ -91,10 +90,10 @@ options(dplyr.summarise.inform = FALSE)
 #  
 #  scoring_history <- ffscrapr::ff_scoringhistory(conn, 2012:2020)
 #  
-#  adp_outcomes <- ffs_adp_outcomes(scoring_history = scoring_history, injury_model = "simple")
+#  adp_outcomes <- ffs_adp_outcomes(scoring_history = scoring_history, gp_model = "simple",pos_filter = c("QB","RB","WR","TE","K"))
 #  
 #  latest_rankings <- ffs_latest_rankings()
-#  lineup_constraints <- ffscrapr::ff_starter_positions(conn)
+#  lineup_constraints <- ffs_starter_positions(conn)
 
 ## ----eval = FALSE-------------------------------------------------------------
 #  conn2 <- mfl_connect(2021)
@@ -118,8 +117,8 @@ options(dplyr.summarise.inform = FALSE)
 #  rosters_raw <- leagues %>%
 #    select(-homeURL) %>%
 #    mutate(
-#      rosters = future_map(id, get_rosters),
-#      franchises = future_map(id, get_franchises)
+#      rosters = map(id, get_rosters),
+#      franchises = map(id, get_franchises)
 #    )
 #  
 #  franchises <- rosters_raw %>%
@@ -138,7 +137,7 @@ options(dplyr.summarise.inform = FALSE)
 #  projected_scores <- ffs_generate_projections(adp_outcomes = adp_outcomes,
 #                                               latest_rankings = latest_rankings,
 #                                               n_seasons = n_seasons,
-#                                               n_weeks = n_weeks,
+#                                               weeks = 1:14,
 #                                               rosters = rosters)
 #  
 #  tictoc::tic(glue::glue("ffs_score_rosters {Sys.time()}"))
@@ -149,17 +148,12 @@ options(dplyr.summarise.inform = FALSE)
 #  optimal_scores <- ffs_optimize_lineups(
 #    roster_scores = roster_scores,
 #    lineup_constraints = lineup_constraints,
-#    best_ball = FALSE,
-#    parallel = TRUE)
+#    pos_filter = c("QB","RB","WR","TE","K"),
+#    best_ball = FALSE)
 #  tictoc::toc()
 
 ## ----eval = FALSE-------------------------------------------------------------
-#  schedules <- ffs_build_schedules(n_teams =
-#                                     rosters %>%
-#                                      dplyr::distinct(
-#                                        .data$league_id,
-#                                        .data$franchise_id) %>%
-#                                      nrow(),
+#  schedules <- ffs_build_schedules(franchises = franchises,
 #                                   n_seasons = n_seasons,
 #                                   n_weeks = n_weeks)
 #  

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Tan Ho" />
 
-<meta name="date" content="2021-07-19" />
+<meta name="date" content="2021-09-11" />
 
 <title>Custom Simulations</title>
 
@@ -141,11 +141,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <h1 class="title toc-ignore">Custom Simulations</h1>
 <h4 class="author">Tan Ho</h4>
-<h4 class="date">2021-07-19</h4>
+<h4 class="date">2021-09-11</h4>
 
 
 
-<p>ffsimulator also provides the component subfunctions (prefixed with <code>ffs_</code>) in case you want to customize and run certain components individually. This vignette will discuss various options and paths you might use in your own analysis, and wrap up with an example of custom code for the <a href="https://scottfishbowl.com/2021/">2021 Scott Fish Bowl</a>.</p>
+<p>ffsimulator also provides the component subfunctions (prefixed with <code>ffs_</code>) in case you want to customize and run certain components individually. This vignette will discuss various options and paths you might use in your own analysis, and discuss various customizations for simulating the <a href="https://scottfishbowl.com/2021/">2021 Scott Fish Bowl</a>.</p>
+<p>You can also use the <code>ffs_copy_template()</code> function to quickly get started with your own custom simulation!</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ffsimulator)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ffscrapr)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
@@ -166,11 +167,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>By default, ff_simulate imports the following data based on the ff_connect <code>conn</code> object that is passed in:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>scoring_history <span class="ot">&lt;-</span> ffscrapr<span class="sc">::</span><span class="fu">ff_scoringhistory</span>(conn, <span class="at">seasons =</span> <span class="dv">2012</span><span class="sc">:</span><span class="dv">2020</span>)</span></code></pre></div>
 <p>This retrieves week-level fantasy scoring for the specified years, and is built from nflfastR weekly data combined with the platform specified league rules.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>latest_rankings <span class="ot">&lt;-</span> <span class="fu">ffs_latest_rankings</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>latest_rankings <span class="ot">&lt;-</span> <span class="fu">ffs_latest_rankings</span>(<span class="at">type =</span> <span class="st">&quot;draft&quot;</span>) <span class="co"># also &quot;week&quot;, for inseason sims</span></span></code></pre></div>
 <p>This retrieves the latest FantasyPros positional rankings available from the <a href="https://github.com/dynastyprocess/data">DynastyProcess data repository</a>. If you want to customize the rankings used in your simulation, you can construct and replace this latest_rankings dataframe with one of a similar structure and column naming - the important ones are (positional) “ecr”, “sd”, “bye”, and “fantasypros_id”.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>rosters <span class="ot">&lt;-</span> <span class="fu">ffs_rosters</span>(conn)</span></code></pre></div>
-<p>This retrieves rosters and attaches a fantasypros_id to them. You could run hypothetical scenarios such as trades by editing this rosters dataframe by hand and then running the simulation!</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>lineup_constraints <span class="ot">&lt;-</span> ffscrapr<span class="sc">::</span><span class="fu">ff_starter_positions</span>(conn)</span></code></pre></div>
+<p>This retrieves rosters and attaches a <code>fantasypros_id</code> to them. You could run hypothetical scenarios such as trades by editing this rosters dataframe by hand and then running the simulation!</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>lineup_constraints <span class="ot">&lt;-</span> <span class="fu">ffs_starter_positions</span>(conn)</span></code></pre></div>
 <p>This retrieves lineup constraints from your fantasy platform. You can edit these to test out hypothetical starting lineup settings and minimum requirements!</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>league_info <span class="ot">&lt;-</span> ffscrapr<span class="sc">::</span><span class="fu">ff_league</span>(conn)</span></code></pre></div>
 <p>This brings in league information that is primarily used for plot names.</p>
@@ -180,17 +181,18 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p><code>ff_simulate</code> runs two functions to generate “projections” - the first one builds the population of weekly scores to resample from, and the second one runs the bootstrap resampling for n_seasons x n_weeks.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>adp_outcomes <span class="ot">&lt;-</span> <span class="fu">ffs_adp_outcomes</span>(</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">scoring_history =</span> scoring_history,</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">injury_model =</span> <span class="st">&quot;simple&quot;</span> <span class="co"># or &quot;none&quot;</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">gp_model =</span> <span class="st">&quot;simple&quot;</span>, <span class="co"># or &quot;none&quot;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">pos_filter =</span> <span class="fu">c</span>(<span class="st">&quot;QB&quot;</span>,<span class="st">&quot;RB&quot;</span>,<span class="st">&quot;WR&quot;</span>,<span class="st">&quot;TE&quot;</span>,<span class="st">&quot;K&quot;</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
 <p>This builds out the population of weekly outcomes for each positional adp rank, using the above-mentioned scoring history as well as <code>fp_rankings_history</code> (2012-2020 historical positional rankings) and <code>fp_injury_table</code>(an injury model).</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>projected_scores <span class="ot">&lt;-</span> <span class="fu">ffs_generate_projections</span>(</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">adp_outcomes =</span> adp_outcomes,</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">latest_rankings =</span> latest_rankings,</span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_seasons =</span> <span class="dv">100</span>, <span class="co"># number of seasons</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_weeks =</span> <span class="dv">14</span>, <span class="co"># weeks per season</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">weeks =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">14</span>, <span class="co"># specifies which weeks to generate projections for</span></span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">rosters =</span> rosters <span class="co"># optional, reduces the sample to just rostered players</span></span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
-<p>This uses the adp_outcomes table, latest rankings, some parameters (number of seasons, number of weeks per season), and rosters, generating a dataframe of length n_seasons x n_weeks x nrow(latest_rankings) and automatically blanking out NFL bye weeks.</p>
+<p>This uses the adp_outcomes table, latest rankings, some parameters (number of seasons, specific weeks), and rosters, generating a dataframe of length n_seasons x n_weeks x nrow(latest_rankings) and automatically blanking out NFL bye weeks.</p>
 </div>
 <div id="calculating-roster-scores" class="section level3">
 <h3>Calculating Roster Scores</h3>
@@ -206,7 +208,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">lineup_efficiency_mean =</span> <span class="fl">0.775</span>,</span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">lineup_efficiency_sd =</span> <span class="fl">0.05</span>,</span>
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">best_ball =</span> <span class="cn">FALSE</span>, <span class="co"># or TRUE</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">parallel =</span> <span class="cn">FALSE</span> <span class="co"># or TRUE </span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">pos_filter =</span> <span class="fu">c</span>(<span class="st">&quot;QB&quot;</span>,<span class="st">&quot;RB&quot;</span>,<span class="st">&quot;WR&quot;</span>,<span class="st">&quot;TE&quot;</span>,<span class="st">&quot;K&quot;</span>)</span>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
 <p>This function runs the lineup optimisation and applies a small lineup efficiency model.</p>
 <p>Lineup efficiency refers to the ratio of “actual lineup score” to “optimal lineup score”. Lineup efficiency is generated as a random number that is normally distributed around 0.775 (77.5%) and has a standard deviation of 0.05. This gives the usual lineup efficiency range to be somewhere between 0.67 and 0.87, which is (in my experience) the typical range of lineup efficiency. You can adjust the lineup efficiency model for yourself, or perhaps apply your own modelling afterwards. <code>best_ball</code> forces lineup efficiency to be 100% of the optimal score.</p>
@@ -216,10 +218,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h3>Building Schedules</h3>
 <p>In order to calculate head to head wins, you need a schedule! Enter <code>ffs_build_schedules()</code>:</p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>  schedules <span class="ot">&lt;-</span> <span class="fu">ffs_build_schedules</span>(</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_teams =</span> <span class="fu">length</span>(<span class="fu">unique</span>(rosters<span class="sc">$</span>franchise_id)), </span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_seasons =</span> n_seasons,</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_weeks =</span> n_weeks,</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">seed =</span> <span class="cn">NULL</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_seasons =</span> n_seasons,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_weeks =</span> n_weeks,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">seed =</span> <span class="cn">NULL</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">franchises =</span> <span class="fu">ff_franchises</span>(conn)</span>
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
 <p>This efficiently builds a randomized head to head schedule for a given number of seasons, teams, and weeks.</p>
 <p>It starts with the <a href="https://en.wikipedia.org/wiki/Round-robin_tournament#Scheduling_algorithm">circle method for round robin scheduling</a>, grows or shrinks the schedule to match the required number of weeks, and then shuffles both the order that teams are assigned in and the order that weeks are generated. This doesn’t “guarantee” unique schedules, but there are <code>n_teams! x n_weeks!</code> permutations of the schedule so it’s very very likely that the schedules are unique (3x10^18 possible schedules for a 12 team league playing 13 weeks).</p>
@@ -240,12 +242,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ffsimulator)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ffscrapr)</span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(furrr) </span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tictoc)</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(multisession)</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">613</span>)</span></code></pre></div>
-<p>Package listing. I add furrr and set plan(multisession) so that the optimizer can be run in parallel, set ffscrapr to cache to my hard drive, and set a seed for reproducibility.</p>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tictoc) <span class="co"># for timing!</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">613</span>)</span></code></pre></div>
+<p>Package listing. I set ffscrapr to cache to my hard drive, and set a seed for reproducibility.</p>
 <div id="import-data" class="section level3">
 <h3>Import Data</h3>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>conn <span class="ot">&lt;-</span> <span class="fu">mfl_connect</span>(<span class="dv">2021</span>, <span class="dv">47747</span>) <span class="co"># a random SFB league to grab league info from</span></span>
@@ -254,10 +254,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>scoring_history <span class="ot">&lt;-</span> ffscrapr<span class="sc">::</span><span class="fu">ff_scoringhistory</span>(conn, <span class="dv">2012</span><span class="sc">:</span><span class="dv">2020</span>)</span>
 <span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>adp_outcomes <span class="ot">&lt;-</span> <span class="fu">ffs_adp_outcomes</span>(<span class="at">scoring_history =</span> scoring_history, <span class="at">injury_model =</span> <span class="st">&quot;simple&quot;</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>adp_outcomes <span class="ot">&lt;-</span> <span class="fu">ffs_adp_outcomes</span>(<span class="at">scoring_history =</span> scoring_history, <span class="at">gp_model =</span> <span class="st">&quot;simple&quot;</span>,<span class="at">pos_filter =</span> <span class="fu">c</span>(<span class="st">&quot;QB&quot;</span>,<span class="st">&quot;RB&quot;</span>,<span class="st">&quot;WR&quot;</span>,<span class="st">&quot;TE&quot;</span>,<span class="st">&quot;K&quot;</span>))</span>
 <span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>latest_rankings <span class="ot">&lt;-</span> <span class="fu">ffs_latest_rankings</span>()</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>lineup_constraints <span class="ot">&lt;-</span> ffscrapr<span class="sc">::</span><span class="fu">ff_starter_positions</span>(conn)</span></code></pre></div>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>lineup_constraints <span class="ot">&lt;-</span> <span class="fu">ffs_starter_positions</span>(conn)</span></code></pre></div>
 <p>We can use one league ID here to grab most of the historical scoring data and rules/lineups etc for the entire SFB contest (rather than running it once for each of the twenty league IDs).</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>conn2 <span class="ot">&lt;-</span> <span class="fu">mfl_connect</span>(<span class="dv">2021</span>)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -280,8 +280,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>rosters_raw <span class="ot">&lt;-</span> leagues <span class="sc">%&gt;%</span></span>
 <span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>homeURL) <span class="sc">%&gt;%</span></span>
 <span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">rosters =</span> <span class="fu">future_map</span>(id, get_rosters),</span>
-<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">franchises =</span> <span class="fu">future_map</span>(id, get_franchises)</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">rosters =</span> <span class="fu">map</span>(id, get_rosters),</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">franchises =</span> <span class="fu">map</span>(id, get_franchises)</span>
 <span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>franchises <span class="ot">&lt;-</span> rosters_raw <span class="sc">%&gt;%</span></span>
@@ -299,7 +299,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>projected_scores <span class="ot">&lt;-</span> <span class="fu">ffs_generate_projections</span>(<span class="at">adp_outcomes =</span> adp_outcomes,</span>
 <span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>                                             <span class="at">latest_rankings =</span> latest_rankings,</span>
 <span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>                                             <span class="at">n_seasons =</span> n_seasons,</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>                                             <span class="at">n_weeks =</span> n_weeks,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>                                             <span class="at">weeks =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">14</span>,</span>
 <span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>                                             <span class="at">rosters =</span> rosters)</span>
 <span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>tictoc<span class="sc">::</span><span class="fu">tic</span>(glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">&quot;ffs_score_rosters {Sys.time()}&quot;</span>))</span>
@@ -310,22 +310,17 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>optimal_scores <span class="ot">&lt;-</span> <span class="fu">ffs_optimize_lineups</span>(</span>
 <span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">roster_scores =</span> roster_scores,</span>
 <span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">lineup_constraints =</span> lineup_constraints,</span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">best_ball =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">parallel =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">pos_filter =</span> <span class="fu">c</span>(<span class="st">&quot;QB&quot;</span>,<span class="st">&quot;RB&quot;</span>,<span class="st">&quot;WR&quot;</span>,<span class="st">&quot;TE&quot;</span>,<span class="st">&quot;K&quot;</span>),</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">best_ball =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>tictoc<span class="sc">::</span><span class="fu">toc</span>()</span></code></pre></div>
 <p>These are pretty straight forward, I use tictoc here to time the most expensive parts of the computation so that I know how long it takes - on my machine, this takes between 20-25 minutes to compute.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>schedules <span class="ot">&lt;-</span> <span class="fu">ffs_build_schedules</span>(<span class="at">n_teams =</span> </span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>                                   rosters <span class="sc">%&gt;%</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>                                    dplyr<span class="sc">::</span><span class="fu">distinct</span>(</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>                                      .data<span class="sc">$</span>league_id,</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>                                      .data<span class="sc">$</span>franchise_id) <span class="sc">%&gt;%</span></span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>                                    <span class="fu">nrow</span>(),</span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">n_seasons =</span> n_seasons,</span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">n_weeks =</span> n_weeks)</span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>summary_week <span class="ot">&lt;-</span> <span class="fu">ffs_summarise_week</span>(optimal_scores, schedules)</span>
-<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>summary_season <span class="ot">&lt;-</span> <span class="fu">ffs_summarise_season</span>(summary_week)</span>
-<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>summary_simulation <span class="ot">&lt;-</span> <span class="fu">ffs_summarise_simulation</span>(summary_season)</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>schedules <span class="ot">&lt;-</span> <span class="fu">ffs_build_schedules</span>(<span class="at">franchises =</span> franchises,</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">n_seasons =</span> n_seasons,</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">n_weeks =</span> n_weeks)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>summary_week <span class="ot">&lt;-</span> <span class="fu">ffs_summarise_week</span>(optimal_scores, schedules)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>summary_season <span class="ot">&lt;-</span> <span class="fu">ffs_summarise_season</span>(summary_week)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>summary_simulation <span class="ot">&lt;-</span> <span class="fu">ffs_summarise_simulation</span>(summary_season)</span></code></pre></div>
 <p>By comparison, these are very fast to compute (a minute or two total).</p>
 </div>
 </div>
