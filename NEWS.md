@@ -1,13 +1,31 @@
+# ffsimulator 1.2.1
+
+Update to add 2021 data to ranking history, minor bug fixes, and resolve CRAN documentation issues.
+
+## Bugfixes
+
+- Patch if all weeks are bye weeks as zero
+- Bump minimum nflreadr version to 1.2.0 because of data repo location change.
+- Reorganize repo to use github flow
+- typo corrections in custom simulations vignette
+- Redocument and fix spacing for CRAN issues
+
+Thank you to all who've provided feedback and contributions on this release, including: [&#x0040;bcarancibia](https://github.com/bcarancibia), [&#x0040;maatspencer](https://github.com/maatspencer), [&#x0040;rogers1000](https://github.com/rogers1000), and [&#x0040;topfunky](https://github.com/topfunky).
+
+---
+
 # ffsimulator 1.2.0
 
 This release of ffsimulator adds an experimental wins added calculation with `ff_wins_added()`, some cleanups, and try-handling to examples because apparently donttest doesn't exist.
 
 ## New features
+
 - `ff_wins_added()` runs the simulation as desired once, then calculates the net wins added for each player over a replacement level player.
 - `ffs_add_replacement_level()` adds replacement level players to every team that are essentially the lowest player at each position that is not currently rostered. 
 - `ff_simulate()` and `ff_simulate_week()` gains a "return" parameter that controls elements to return - this provides more data so that wins_added can be calculated efficiently.  
 
-# Fixes
+## Fixes
+
 - `verbose` argument primarily refers to the package option now. 
 - Fix bye week handling for summarising actual schedule weeks by using inner join.
 

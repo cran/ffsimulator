@@ -66,7 +66,7 @@ options(dplyr.summarise.inform = FALSE)
 #      n_seasons = n_seasons,
 #      n_weeks = n_weeks,
 #      seed = NULL,
-#      franchises = ff_franchises(conn)
+#      franchises = ffs_franchises(conn)
 #    )
 
 ## ----eval = FALSE-------------------------------------------------------------
