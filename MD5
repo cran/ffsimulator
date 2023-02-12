@@ -1,14 +1,14 @@
-616ddc388e2fce044c65339dd21039ed *DESCRIPTION
+3a716358a274320e5cd5698189c1f209 *DESCRIPTION
 ef5fc1545274bb679927ab8a7f3aa50b *LICENSE
 1ccd0670080c621a0fcbfecba06ada79 *NAMESPACE
-6074c7c7179579f308118929fd8c60bf *NEWS.md
+d08f1bba80c5a278b49c1fcfc970fe6b *NEWS.md
 6aced171a87826411836725555f0672a *R/0_ff_simulate.R
 da9bffe17f102c2aac8e799251c16f7a *R/0_ff_simulate_week.R
 806a73b50ba25780fb102bd372f01f34 *R/0_ff_wins_added.R
 6009f07c83039a02cdcb369d90a20fde *R/1_outcomes.R
 22e08b5173827cdff42f6822eb1e0731 *R/1_outcomes_week.R
 fcc49138692243150e924321477cadf6 *R/2_rankings.R
-06d667689d3cf83f11bf0e8782a34f33 *R/3_rosters.R
+d9f1f5559376366fceb70c0c83fc0848 *R/3_rosters.R
 9f70d4960adf3eb5555a0bb85ff8b899 *R/3_rosters_replacementlevel.R
 a08a3c3a0f97cc1edd1972b4e3ac8774 *R/4_projections.R
 0b89321999d764ecb51747c233081ac1 *R/4_projections_week.R
@@ -24,7 +24,7 @@ a671a81c6a05066cca423f12489a9234 *R/9_autoplot_week.R
 1e9755f1eb71f692a9ffefbc0d2ef700 *R/utils-ffscrapr.R
 f9efbf2c8e877ce8673bfd79cf67c352 *R/utils.R
 2edbf79608ee044b6aa5a0119e857dad *R/zzz.R
-3eed6150cbf7d2bb6a17885c3a256008 *README.md
+b4f29939bb1e0f7b935789579a917cc6 *README.md
 8c0b0669ba0ded0426d0fef1a2ef7d5e *build/vignette.rds
 6d86f4de8b3c1102274451233d47113e *data/fp_injury_table.rda
 38427fb2ba3c299a21e2759d7cceb59b *data/fp_rankings_history.rda
@@ -62,10 +62,10 @@ fe606e946d298133f42351979003acd1 *inst/cache/schedules.rds
 4c87e7a1839189ae9cf39d63c1d47d2e *inst/cache/sleeper_scoring_history.rds
 86c1471ba60d72143bc0d587a7b504ee *inst/doc/basic.R
 7dc6700a7754dd7ec0777afbb5692fc9 *inst/doc/basic.Rmd
-c2d0f24c17e4239a02dff6c11cfbbc91 *inst/doc/basic.html
+707cff91e78df46099c0e41aa55eb2a3 *inst/doc/basic.html
 30208ba537806f083e13a4fea0da501b *inst/doc/custom.R
-3807d64b5196f902ffd859df8029ff57 *inst/doc/custom.Rmd
-9e152c69e5366e8ce88f014dc4e7cd96 *inst/doc/custom.html
+99dfc9bfc4522d67960aba3284959088 *inst/doc/custom.Rmd
+2df622f50b06e99dfba57e40e9cee4b7 *inst/doc/custom.html
 da095b9ac43a0c1ee1d02df25a0f135f *inst/simulation_template_season.R
 950d163437d58bf047076f9bb50ed2c2 *inst/simulation_template_week.R
 ea83877616d39cc179bb8e8798244b4d *man/assert_columns.Rd
@@ -109,6 +109,7 @@ c631d5f62b14bfa26dbf576451ff56ec *man/mfl_connect.Rd
 e525b616b44f5eaf2a69bf2693cd8bdb *man/sleeper_connect.Rd
 d1a6a98a71e1b2562c530884451ec99b *tests/testthat.R
 98491172365e91057841087ab7c69cb1 *tests/testthat/_snaps/ffs_autoplot/points-plot.svg
+f0f486c0704d38d2f06068b173d52e65 *tests/testthat/_snaps/ffs_autoplot/rank-plot.new.svg
 9524c66ae234d769275f4a5acdbc889d *tests/testthat/_snaps/ffs_autoplot/rank-plot.svg
 3cc869a2040bc14d2e27efdc427e6468 *tests/testthat/_snaps/ffs_autoplot/weekly-luck-plot.svg
 3cd51af82c9de572846c5f28d3da60cb *tests/testthat/_snaps/ffs_autoplot/weekly-points-plot.svg
@@ -117,4 +118,4 @@ d1a6a98a71e1b2562c530884451ec99b *tests/testthat.R
 0030d0731faf6849df49d006370dded2 *tests/testthat/test-ffs_components.R
 79dd4cab8aa2bb26eb321f601f97ab40 *tests/testthat/test-integration.R
 7dc6700a7754dd7ec0777afbb5692fc9 *vignettes/basic.Rmd
-3807d64b5196f902ffd859df8029ff57 *vignettes/custom.Rmd
+99dfc9bfc4522d67960aba3284959088 *vignettes/custom.Rmd
